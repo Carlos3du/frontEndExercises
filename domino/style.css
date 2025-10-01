@@ -6,6 +6,105 @@ body {
     padding: 20px;
 }
 
+#secao-configuracao {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 50vh;
+    margin-bottom: 20px;
+}
+
+#card-configuracao {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    max-width: 400px;
+    width: 100%;
+}
+
+#card-configuracao h2 {
+    margin-bottom: 25px;
+    color: #007bff;
+    font-size: 1.8rem;
+}
+
+.campo-config {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.campo-config label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+    font-size: 1rem;
+}
+
+.campo-config input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+.campo-config input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.campo-config small {
+    display: block;
+    margin-top: 5px;
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+#btn-iniciar-jogo {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-top: 15px;
+    background-color: #28a745;
+    border-radius: 8px;
+}
+
+#btn-iniciar-jogo:hover {
+    background-color: #218838;
+}
+
+#controles-finais {
+    margin: 20px 0;
+}
+
+#btn-nova-partida {
+    background-color: #6c757d;
+    font-weight: bold;
+    padding: 12px 20px;
+    font-size: 1rem;
+}
+
+#btn-nova-partida:hover {
+    background-color: #545b62;
+}
+
+.alerta-erro {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
 #controles, #area-jogo, #tabuleiro {
     margin-bottom: 20px;
 }
@@ -77,24 +176,224 @@ button:disabled {
     max-width: 400px;
 }
 
-#log-jogo {
-    text-align: left;
-    max-width: 600px;
+#pecas-disponiveis {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
     margin: 20px auto;
-    background: #fff;
-    padding: 10px;
-    border-radius: 5px;
-    height: 150px;
-    overflow-y: auto;
-    border: 1px solid #ddd;
+    max-width: 800px;
 }
 
-#log-jogo p {
-    margin: 5px 0;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 5px;
+#pecas-disponiveis h3 {
+    margin-bottom: 15px;
+    color: #007bff;
+    font-size: 18px;
+}
+
+#monte-pecas {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 2px dashed #007bff;
+    min-height: 60px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.peca-monte {
+    background-color: #e3f2fd;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    width: 60px;
+    height: 30px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    font-size: 14px;
+    font-weight: bold;
+    margin: 2px;
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.peca-monte:hover {
+    transform: scale(1.05);
+    background-color: #bbdefb;
+}
+
+.peca-monte .peca-valor {
+    width: 50%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #0056b3;
+}
+
+.peca-monte .peca-valor:first-child {
+    border-right: 1px solid #007bff;
 }
 
 .hidden {
     display: none;
+}
+
+#tabela-jogadas-container {
+    max-width: 800px;
+    margin: 20px auto;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+#tabela-jogadas {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+#tabela-jogadas thead {
+    background-color: #007bff;
+    color: white;
+}
+
+#tabela-jogadas th,
+#tabela-jogadas td {
+    padding: 12px 8px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+#tabela-jogadas th {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+}
+
+#tabela-jogadas tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+#tabela-jogadas tbody tr:hover {
+    background-color: #e3f2fd;
+}
+
+#tabela-jogadas td:first-child {
+    font-weight: bold;
+    color: #007bff;
+}
+
+#tabela-jogadas td:nth-child(3) {
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+#tabela-jogadas td:last-child {
+    font-weight: bold;
+    color: #28a745;
+}
+
+#tabela-jogadas tr:has(td:contains("Não encaixou")) td:last-child {
+    color: #dc3545;
+}
+
+#controles-jogador {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    margin: 20px auto;
+    max-width: 500px;
+    text-align: center;
+}
+
+.fase-controle {
+    margin: 1rem 0;
+}
+
+.fase-controle h3 {
+    margin: 0 0 1rem 0;
+    color: #007bff;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.fase-controle h4 {
+    margin: 0 0 1rem 0;
+    color: #007bff;
+    font-weight: 600;
+}
+
+#btn-puxar-peca {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#btn-puxar-peca:hover {
+    background-color: #0056b3;
+}
+
+.peca-puxada {
+    background-color: #f8f9fa;
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem auto;
+    display: inline-flex;
+    align-items: center;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.peca-puxada .peca-valor {
+    background-color: #007bff;
+    color: white;
+    padding: 0.5rem 0.8rem;
+    margin: 0 2px;
+    border-radius: 4px;
+    min-width: 30px;
+    text-align: center;
+}
+
+#opcoes-jogada {
+    margin: 1rem 0;
+}
+
+#opcoes-jogada button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 0 0.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#opcoes-jogada button:hover {
+    background-color: #1e7e34;
+}
+
+.dica {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin: 0.5rem 0 0 0;
+    font-style: italic;
 }

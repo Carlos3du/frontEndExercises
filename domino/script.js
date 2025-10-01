@@ -1,4 +1,3 @@
-// --- LÓGICA DO JOGO ---
 
 const CabecaPeca = {
     BRANCO: 0, PIO: 1, DUQUE: 2, TERNO: 3, QUADRA: 4, QUINA: 5, SENA: 6
@@ -50,10 +49,7 @@ class Tabuleiro {
         return novoTabuleiro;
     }
 
-    // ##### MÉTODOS DE JOGADA CORRIGIDOS #####
 
-    // Estes métodos agora trabalham com cópias da peça para evitar bugs
-    // e a lógica da primeira peça foi corrigida.
     
     tentarNoInicio(peca) {
         const pecaCopia = new Peca(peca.esquerda, peca.direita);
@@ -78,7 +74,6 @@ class Tabuleiro {
 
     tentarNoFim(peca) {
         if (this.tamanho === 0) {
-            // Se o tabuleiro está vazio, jogar no fim é o mesmo que jogar no início.
             return this.tentarNoInicio(peca);
         }
         const pecaCopia = new Peca(peca.esquerda, peca.direita);
@@ -138,58 +133,113 @@ class Jogador {
     }
 }
 
-// --- CONTROLE DA INTERFACE E DO JOGO ---
 
 class BurrinhoInteligente {
     constructor(nomeJogador1 = "Jogador 1", nomeJogador2 = "Jogador 2") {
         this.jogador1 = new Jogador(nomeJogador1);
         this.jogador2 = new Jogador(nomeJogador2);
         this.modo = null;
-        this.intervaloSimulacao = null;
         this.dom = {
-            btnSimulacao: document.getElementById('btn-simulacao'),
-            btnJogador: document.getElementById('btn-jogador'),
+            secaoConfiguracao: document.getElementById('secao-configuracao'),
+            areaJogoPrincipal: document.getElementById('area-jogo-principal'),
+            numRodadas: document.getElementById('num-rodadas'),
+            btnIniciarJogo: document.getElementById('btn-iniciar-jogo'),
+            btnNovaPartida: document.getElementById('btn-nova-partida'),
             placar: { pontos1: document.getElementById('pontos-jogador1'), pontos2: document.getElementById('pontos-jogador2') },
             mensagemVez: document.getElementById('mensagem-vez'),
             pecasRestantes: document.getElementById('pecas-restantes'),
             controlesJogador: document.getElementById('controles-jogador'),
+            fasePuxar: document.getElementById('fase-puxar'),
+            faseJogar: document.getElementById('fase-jogar'),
+            btnPuxarPeca: document.getElementById('btn-puxar-peca'),
+            pecaAtual: document.getElementById('peca-atual'),
             btnJogarInicio: document.getElementById('btn-jogar-inicio'),
             btnJogarFim: document.getElementById('btn-jogar-fim'),
             tabuleiro: document.getElementById('tabuleiro'),
-            logJogo: document.getElementById('log-jogo'),
+            montePecas: document.getElementById('monte-pecas'),
+            tabelaJogadasBody: document.getElementById('tabela-jogadas-body'),
         };
+        
+        this.pecaAtualJogador = null; 
         this.vincularEventos();
     }
 
-    iniciarJogo(modo) {
-        clearInterval(this.intervaloSimulacao);
-        this.modo = modo;
+    iniciarJogo() {
+        const numRodadas = parseInt(this.dom.numRodadas.value);
+        
+        if (!numRodadas || numRodadas < 1 || numRodadas > 100) {
+            this.mostrarErro('Por favor, insira um número válido de rodadas (1-100).');
+            return;
+        }
+        
+        this.maxRodadas = numRodadas;
+        this.modo = 'jogador';
         this.pecas = createPecas();
         this.tabuleiro = new Tabuleiro();
         this.jogador1.pontuacao = 0;
         this.jogador2.pontuacao = 0;
         this.rodada = 1;
-        this.dom.btnSimulacao.disabled = true;
-        this.dom.btnJogador.disabled = true;
-        this.dom.logJogo.innerHTML = '';
-        this.adicionarLog("Jogo iniciado no modo: " + modo);
+        
+        this.dom.secaoConfiguracao.classList.add('hidden');
+        this.dom.areaJogoPrincipal.classList.remove('hidden');
+        
+        this.dom.tabelaJogadasBody.innerHTML = '';
+        this.adicionarJogadaNaTabela('--', '--', { esquerda: '--', direita: '--' }, `Jogo iniciado - ${this.maxRodadas} rodadas`, '--');
         this.atualizarInterface();
-        if (this.modo === 'simulacao') {
-            this.jogarSimulacao();
-        } else {
-            this.prepararTurnoJogador();
-        }
+        this.prepararTurnoJogador();
     }
 
     vincularEventos() {
-        this.dom.btnSimulacao.addEventListener('click', () => this.iniciarJogo('simulacao'));
-        this.dom.btnJogador.addEventListener('click', () => this.iniciarJogo('jogador'));
+        this.dom.btnIniciarJogo.addEventListener('click', () => this.iniciarJogo());
+        this.dom.btnNovaPartida.addEventListener('click', () => this.novaPartida());
+        this.dom.btnPuxarPeca.addEventListener('click', () => this.puxarPeca());
+        this.dom.btnJogarInicio.addEventListener('click', () => this.jogarPeca('inicio'));
+        this.dom.btnJogarFim.addEventListener('click', () => this.jogarPeca('fim'));
+        
+        this.dom.numRodadas.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.iniciarJogo();
+            }
+        });
+        
+        this.dom.numRodadas.addEventListener('input', (e) => {
+            const valor = parseInt(e.target.value);
+            if (valor < 1) e.target.value = 1;
+            if (valor > 100) e.target.value = 100;
+        });
     }
     
-     atualizarInterface() {
+    novaPartida() {
+        this.dom.areaJogoPrincipal.classList.add('hidden');
+        this.dom.secaoConfiguracao.classList.remove('hidden');
+        this.dom.controlesJogador.classList.add('hidden');
+    }
+    
+    mostrarErro(mensagem) {
+        const alertaAnterior = document.querySelector('.alerta-erro');
+        if (alertaAnterior) {
+            alertaAnterior.remove();
+        }
+        
+        const alerta = document.createElement('div');
+        alerta.className = 'alerta-erro';
+        alerta.innerHTML = `<span>⚠️ ${mensagem}</span>`;
+        
+        const cardConfiguracao = document.getElementById('card-configuracao');
+        cardConfiguracao.insertBefore(alerta, cardConfiguracao.firstChild);
+        
+        setTimeout(() => {
+            if (alerta.parentNode) {
+                alerta.remove();
+            }
+        }, 5000);
+    }
+    
+    atualizarInterface() {
         this.dom.placar.pontos1.textContent = this.jogador1.pontuacao;
         this.dom.placar.pontos2.textContent = this.jogador2.pontuacao;
         this.dom.pecasRestantes.textContent = this.pecas.length;
+        
         this.dom.tabuleiro.innerHTML = '';
         let atual = this.tabuleiro.inicio;
         while (atual != null) {
@@ -199,11 +249,111 @@ class BurrinhoInteligente {
             this.dom.tabuleiro.appendChild(pecaDiv);
             atual = atual.proximo;
         }
+        
+        this.atualizarMontePecas();
     }
 
-    adicionarLog(mensagem) {
-        this.dom.logJogo.innerHTML += `<p>${mensagem}</p>`;
-        this.dom.logJogo.scrollTop = this.dom.logJogo.scrollHeight;
+    atualizarMontePecas() {
+        this.dom.montePecas.innerHTML = '';
+        
+        const pecasOrdenadas = [...this.pecas].sort((a, b) => {
+            if (a.esquerda !== b.esquerda) {
+                return a.esquerda - b.esquerda;
+            }
+            return a.direita - b.direita;
+        });
+        
+        pecasOrdenadas.forEach(peca => {
+            const pecaDiv = document.createElement('div');
+            pecaDiv.className = 'peca-monte';
+            pecaDiv.innerHTML = `<span class="peca-valor">${peca.esquerda}</span><span class="peca-valor">${peca.direita}</span>`;
+            this.dom.montePecas.appendChild(pecaDiv);
+        });
+    }
+
+    adicionarJogadaNaTabela(rodada, jogador, peca, direcao, pontos) {
+        const linha = document.createElement('tr');
+        linha.innerHTML = `
+            <td>${rodada}</td>
+            <td>${jogador}</td>
+            <td>|${peca.esquerda}|${peca.direita}|</td>
+            <td>${direcao}</td>
+            <td>${pontos}</td>
+        `;
+        this.dom.tabelaJogadasBody.appendChild(linha);
+    }
+
+    prepararTurnoJogador() {
+        if (this.verificarFimDeJogo()) return;
+        
+        const jogadorVez = this.definirJogador();
+        this.dom.mensagemVez.textContent = `É a vez de ${jogadorVez.nome}!`;
+        
+        this.dom.controlesJogador.classList.remove('hidden');
+        this.dom.fasePuxar.classList.remove('hidden');
+        this.dom.faseJogar.classList.add('hidden');
+        this.pecaAtualJogador = null;
+    }
+    
+    puxarPeca() {
+        if (this.pecas.length === 0) {
+            this.verificarFimDeJogo();
+            return;
+        }
+        
+        const indice = Math.floor(Math.random() * this.pecas.length);
+        this.pecaAtualJogador = this.pecas.splice(indice, 1)[0];
+        
+        this.dom.pecaAtual.innerHTML = `
+            <div class="peca-puxada">
+                <span class="peca-valor">${this.pecaAtualJogador.esquerda}</span>
+                <span class="peca-valor">${this.pecaAtualJogador.direita}</span>
+            </div>
+        `;
+        
+        this.dom.fasePuxar.classList.add('hidden');
+        this.dom.faseJogar.classList.remove('hidden');
+        
+        this.atualizarInterface();
+    }
+    
+    jogarPeca(preferencia) {
+        if (!this.pecaAtualJogador) return;
+        
+        const jogadorVez = this.definirJogador();
+        let resultado = null;
+        
+        if (preferencia === 'inicio') {
+            resultado = this.tabuleiro.tentarNoInicio(this.pecaAtualJogador) || 
+                        this.tabuleiro.tentarNoMeio(this.pecaAtualJogador) || 
+                        this.tabuleiro.tentarNoFim(this.pecaAtualJogador);
+        } else { // preferencia === 'fim'
+            resultado = this.tabuleiro.tentarNoFim(this.pecaAtualJogador) || 
+                        this.tabuleiro.tentarNoMeio(this.pecaAtualJogador) || 
+                        this.tabuleiro.tentarNoInicio(this.pecaAtualJogador);
+        }
+        
+        if (resultado) {
+            jogadorVez.pontuacao += resultado.pontuacao;
+            
+            const direcaoEscolhida = preferencia === 'inicio' ? 'Início' : 'Final';
+            this.adicionarJogadaNaTabela(this.rodada, jogadorVez.nome, this.pecaAtualJogador, direcaoEscolhida, resultado.pontuacao);
+        } else {
+            this.pecas.push(this.pecaAtualJogador);
+            
+            const direcaoEscolhida = preferencia === 'inicio' ? 'Início' : 'Final';
+            this.adicionarJogadaNaTabela(this.rodada, jogadorVez.nome, this.pecaAtualJogador, `${direcaoEscolhida} (Não encaixou)`, 0);
+        }
+        
+        this.rodada++;
+        this.atualizarInterface();
+        
+        this.dom.controlesJogador.classList.add('hidden');
+        this.pecaAtualJogador = null;
+        
+        if (!this.verificarFimDeJogo()) {
+            setTimeout(() => this.prepararTurnoJogador(), 1000);
+        }
     }
 
     definirJogador() {
@@ -211,6 +361,11 @@ class BurrinhoInteligente {
     }
 
     verificarFimDeJogo() {
+        if (this.maxRodadas && this.rodada > this.maxRodadas) {
+            this.encerrarJogo(`Limite de ${this.maxRodadas} rodadas atingido.`);
+            return true;
+        }
+        
         if (this.pecas.length === 0) {
             this.encerrarJogo("Todas as peças foram jogadas.");
             return true;
@@ -231,9 +386,6 @@ class BurrinhoInteligente {
     }
     
      encerrarJogo(motivo) {
-        clearInterval(this.intervaloSimulacao);
-        this.adicionarLog(`---------------- FIM DE JOGO ----------------`);
-        this.adicionarLog(motivo);
         let vencedor = "";
         if (this.jogador1.pontuacao > this.jogador2.pontuacao) {
             vencedor = `${this.jogador1.nome} venceu!`;
@@ -242,10 +394,11 @@ class BurrinhoInteligente {
         } else {
             vencedor = "O jogo empatou!";
         }
-        this.adicionarLog(vencedor);
+        
+        this.adicionarJogadaNaTabela('--', 'RESULTADO', { esquerda: '--', direita: '--' }, motivo, '--');
+        this.adicionarJogadaNaTabela('--', 'VENCEDOR', { esquerda: '--', direita: '--' }, vencedor, '--');
+        
         this.dom.mensagemVez.textContent = "Fim de Jogo!";
-        this.dom.btnSimulacao.disabled = false;
-        this.dom.btnJogador.disabled = false;
         this.dom.controlesJogador.classList.add('hidden');
     }
 
@@ -268,46 +421,93 @@ class BurrinhoInteligente {
         }
 
         if (resultado) {
-            this.adicionarLog(`Rodada ${this.rodada}: ${jogadorVez.nome} jogou |${pecaAtual.esquerda}|${pecaAtual.direita}| no ${resultado.local} e ganhou ${resultado.pontuacao} pontos.`);
             jogadorVez.pontuacao += resultado.pontuacao;
+            
+            const direcaoEscolhida = preferencia === 'inicio' ? 'Início' : 'Final';
+            this.adicionarJogadaNaTabela(this.rodada, jogadorVez.nome, pecaAtual, direcaoEscolhida, resultado.pontuacao);
         } else {
-            this.adicionarLog(`Rodada ${this.rodada}: ${jogadorVez.nome}, a peça |${pecaAtual.esquerda}|${pecaAtual.direita}| não encaixou. A peça voltou para o monte.`);
             this.pecas.push(pecaAtual);
+            
+            const direcaoEscolhida = preferencia === 'inicio' ? 'Início' : 'Final';
+            this.adicionarJogadaNaTabela(this.rodada, jogadorVez.nome, pecaAtual, `${direcaoEscolhida} (Não encaixou)`, 0);
         }
         
         this.rodada++;
         this.atualizarInterface();
     }
 
-    jogarSimulacao() {
-        this.intervaloSimulacao = setInterval(() => {
-            const preferencia = Math.random() < 0.5 ? 'inicio' : 'fim';
-            this.executarTurno(preferencia);
-        }, 1000);
-    }
-    
     prepararTurnoJogador() {
         if (this.verificarFimDeJogo()) return;
+        
         const jogadorVez = this.definirJogador();
-        this.dom.mensagemVez.textContent = `É a sua vez, ${jogadorVez.nome}! Escolha onde priorizar a jogada.`;
+        this.dom.mensagemVez.textContent = `É a vez de ${jogadorVez.nome}!`;
+        
         this.dom.controlesJogador.classList.remove('hidden');
-
-        const acaoDoBotao = (preferencia) => {
-            this.dom.btnJogarInicio.onclick = null;
-            this.dom.btnJogarFim.onclick = null;
-            this.dom.controlesJogador.classList.add('hidden');
+        this.dom.fasePuxar.classList.remove('hidden');
+        this.dom.faseJogar.classList.add('hidden');
+        this.pecaAtualJogador = null;
+    }
+    
+    puxarPeca() {
+        if (this.pecas.length === 0) {
+            this.verificarFimDeJogo();
+            return;
+        }
+        
+        const indice = Math.floor(Math.random() * this.pecas.length);
+        this.pecaAtualJogador = this.pecas.splice(indice, 1)[0];
+        
+        this.dom.pecaAtual.innerHTML = `
+            <div class="peca-puxada">
+                <span class="peca-valor">${this.pecaAtualJogador.esquerda}</span>
+                <span class="peca-valor">${this.pecaAtualJogador.direita}</span>
+            </div>
+        `;
+        
+        this.dom.fasePuxar.classList.add('hidden');
+        this.dom.faseJogar.classList.remove('hidden');
+        
+        this.atualizarInterface();
+    }
+    
+    jogarPeca(preferencia) {
+        if (!this.pecaAtualJogador) return;
+        
+        const jogadorVez = this.definirJogador();
+        let resultado = null;
+        
+        if (preferencia === 'inicio') {
+            resultado = this.tabuleiro.tentarNoInicio(this.pecaAtualJogador) || 
+                        this.tabuleiro.tentarNoMeio(this.pecaAtualJogador) || 
+                        this.tabuleiro.tentarNoFim(this.pecaAtualJogador);
+        } else { // preferencia === 'fim'
+            resultado = this.tabuleiro.tentarNoFim(this.pecaAtualJogador) || 
+                        this.tabuleiro.tentarNoMeio(this.pecaAtualJogador) || 
+                        this.tabuleiro.tentarNoInicio(this.pecaAtualJogador);
+        }
+        
+        if (resultado) {
+            jogadorVez.pontuacao += resultado.pontuacao;
             
-            this.executarTurno(preferencia);
+            const direcaoEscolhida = preferencia === 'inicio' ? 'Início' : 'Final';
+            this.adicionarJogadaNaTabela(this.rodada, jogadorVez.nome, this.pecaAtualJogador, direcaoEscolhida, resultado.pontuacao);
+        } else {
+            this.pecas.push(this.pecaAtualJogador);
             
-            if(this.pecas.length > 0 && this.modo === 'jogador') { // Garante que não continue se o jogo acabou
-                 setTimeout(() => this.prepararTurnoJogador(), 500);
-            }
-        };
-
-        this.dom.btnJogarInicio.onclick = () => acaoDoBotao('inicio');
-        this.dom.btnJogarFim.onclick = () => acaoDoBotao('fim');
+            const direcaoEscolhida = preferencia === 'inicio' ? 'Início' : 'Final';
+            this.adicionarJogadaNaTabela(this.rodada, jogadorVez.nome, this.pecaAtualJogador, `${direcaoEscolhida} (Não encaixou)`, 0);
+        }
+        
+        this.rodada++;
+        this.atualizarInterface();
+        
+        this.dom.controlesJogador.classList.add('hidden');
+        this.pecaAtualJogador = null;
+        
+        if (!this.verificarFimDeJogo()) {
+            setTimeout(() => this.prepararTurnoJogador(), 1000);
+        }
     }
 }
 
-// Inicia o controlador do jogo
 const jogo = new BurrinhoInteligente();

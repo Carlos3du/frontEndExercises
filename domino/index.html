@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-br>
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,26 +9,48 @@
 <body>
     <h1>Burrinho Inteligente</h1>
 
-    <div id="controles">
-        <button id="btn-simulacao">Iniciar Modo Simulação</button>
-        <button id="btn-jogador">Iniciar Modo Jogador</button>
+   
+    <div id="secao-configuracao">
+        <div id="card-configuracao">
+            <h2>Configurar Partida</h2>
+            <div class="campo-config">
+                <label for="num-rodadas">Número de rodadas:</label>
+                <input type="number" id="num-rodadas" min="1" max="100" value="20" 
+                       placeholder="Digite o número de rodadas">
+                <small>Entre 1 e 100 rodadas</small>
+            </div>
+            <button id="btn-iniciar-jogo">Iniciar Jogo</button>
+        </div>
     </div>
 
-    <div id="area-jogo">
+    <div id="area-jogo-principal" class="hidden">
         <div id="placar">
             <h2>Placar</h2>
             <p><span id="nome-jogador1">Jogador 1</span>: <span id="pontos-jogador1">0</span></p>
             <p><span id="nome-jogador2">Jogador 2</span>: <span id="pontos-jogador2">0</span></p>
-        </div>
-
-        <div id="info-rodada">
-            <h3 id="mensagem-vez">Aguardando início do jogo...</h3>
             <p>Peças restantes: <span id="pecas-restantes">28</span></p>
         </div>
 
         <div id="controles-jogador" class="hidden">
-            <button id="btn-jogar-inicio">Jogar no Início</button>
-            <button id="btn-jogar-fim">Jogar no Fim</button>
+            <div id="fase-puxar" class="fase-controle">
+                <h3 id="mensagem-vez">Aguardando início do jogo...</h3>
+                <button id="btn-puxar-peca">🎲 Puxar Peça</button>
+            </div>
+            
+            <div id="fase-jogar" class="fase-controle hidden">
+                <h4>Peça puxada:</h4>
+                <div id="peca-atual"></div>
+                <div id="opcoes-jogada">
+                    <button id="btn-jogar-inicio">⬅️ Jogar no Início</button>
+                    <button id="btn-jogar-fim">Jogar no Final ➡️</button>
+                </div>
+                <p class="dica">Escolha onde colocar sua peça no tabuleiro</p>
+            </div>
+        </div>
+
+        <div id="pecas-disponiveis">
+            <h3>Peças Disponíveis no Monte</h3>
+            <div id="monte-pecas"></div>
         </div>
     </div>
 
@@ -36,8 +58,28 @@
     <div id="tabuleiro">
         </div>
     
-    <h2>Log do Jogo</h2>
-    <div id="log-jogo"></div>
+    <h2>Histórico de Jogadas</h2>
+    <div id="tabela-jogadas-container">
+        <table id="tabela-jogadas">
+            <thead>
+                <tr>
+                    <th>Rodada</th>
+                    <th>Jogador</th>
+                    <th>Peça Jogada</th>
+                    <th>Direção</th>
+                    <th>Pontos</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-jogadas-body">
+            </tbody>
+        </table>
+    </div>
+
+    <div id="controles-finais">
+        <button id="btn-nova-partida">Novo Jogo</button>
+    </div>
+
+    </div> 
 
     <script src="script.js"></script>
 </body>
